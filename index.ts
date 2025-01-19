@@ -5,7 +5,8 @@ import * as bip39 from 'bip39';
 import * as fs from 'fs';
 import * as crypto from 'crypto';
 import * as ecc from 'tiny-secp256k1';
-
+import { Keypair } from '@solana/web3.js';
+import { derivePath } from 'ed25519-hd-key';
 // Initialize the ECC library
 bitcoin.initEccLib(ecc);
 
@@ -16,6 +17,7 @@ interface CryptoAddresses {
   bitcoinBech32?: string;
   bitcoinTaproot?: string;
   dogecoin?: string;
+  solana?: string;
 }
 
 async function generateAddresses(mnemonicInput?: string): Promise<{ mnemonic: string; addresses: CryptoAddresses }> {
@@ -125,6 +127,12 @@ async function generateAddresses(mnemonicInput?: string): Promise<{ mnemonic: st
     },
   });
 
+  // 生成Solana地址
+  const solanaPath = "m/44'/501'/0'/0'";
+  const derivedSeed = derivePath(solanaPath, seed.toString('hex')).key;
+  const keypair = Keypair.fromSeed(derivedSeed);
+  const solanaAddress = keypair.publicKey.toBase58();
+
   return {
     mnemonic,
     addresses: {
@@ -134,6 +142,7 @@ async function generateAddresses(mnemonicInput?: string): Promise<{ mnemonic: st
       bitcoinP2sh: bitcoinAddressP2sh,
       bitcoinBech32: bitcoinAddressBech32,
       dogecoin: dogecoinAddress!,
+      solana: solanaAddress,
     },
   };
 }
@@ -162,6 +171,7 @@ async function main() {
     console.log('比特币 P2SH:', result.addresses.bitcoinP2sh);
     console.log('比特币 Bech32:', result.addresses.bitcoinBech32);
     console.log('狗狗币:', result.addresses.dogecoin);
+    console.log('Solana:', result.addresses.solana);
   } catch (error) {
     console.error('错误:', error);
     process.exit(1);
