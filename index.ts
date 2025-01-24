@@ -12,6 +12,7 @@ bitcoin.initEccLib(ecc);
 
 interface CryptoAddresses {
   ethereum?: string;
+  ethereumPrivateKey?: string;
   bitcoinLegacy?: string;
   bitcoinP2sh?: string;
   bitcoinBech32?: string;
@@ -56,6 +57,7 @@ async function generateAddresses(mnemonicInput?: string): Promise<{ mnemonic: st
   const ethAddress = publicToAddress(ethChild.publicKey, true);
   const ethAddressHexWithout0x = Buffer.from(ethAddress).toString('hex');
   const ethereumAddress = toChecksumAddress('0x' + ethAddressHexWithout0x);
+  const ethereumAddressPrivateKey = ethChild.privateKey?.toString('hex');
 
   // 生成比特币地址
   const bitcoinPathLegacy = "m/44'/0'/0'/0/0";
@@ -137,6 +139,7 @@ async function generateAddresses(mnemonicInput?: string): Promise<{ mnemonic: st
     mnemonic,
     addresses: {
       ethereum: ethereumAddress,
+      ethereumPrivateKey: ethereumAddressPrivateKey,
       bitcoinLegacy: bitcoinAddressLegacy,
       bitcoinTaproot: bitcoinAddressTaproot,
       bitcoinP2sh: bitcoinAddressP2sh,
@@ -166,6 +169,7 @@ async function main() {
     }
     console.log('\n生成的地址：');
     console.log('以太坊:', result.addresses.ethereum);
+    console.log('以太坊私钥:', result.addresses.ethereumPrivateKey);
     console.log('比特币 Legacy:', result.addresses.bitcoinLegacy);
     console.log('比特币 Taproot:', result.addresses.bitcoinTaproot);
     console.log('比特币 P2SH:', result.addresses.bitcoinP2sh);
