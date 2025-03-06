@@ -7,6 +7,8 @@ import * as crypto from 'crypto';
 import * as ecc from 'tiny-secp256k1';
 import { Keypair } from '@solana/web3.js';
 import { derivePath } from 'ed25519-hd-key';
+import { Wallet } from 'xrpl';
+
 // Initialize the ECC library
 bitcoin.initEccLib(ecc);
 
@@ -19,6 +21,7 @@ interface CryptoAddresses {
   bitcoinTaproot?: string;
   dogecoin?: string;
   solana?: string;
+  xrp?: string;
 }
 
 async function generateAddresses(mnemonicInput?: string): Promise<{ mnemonic: string; addresses: CryptoAddresses }> {
@@ -129,11 +132,15 @@ async function generateAddresses(mnemonicInput?: string): Promise<{ mnemonic: st
     },
   });
 
-  // 生成Solana地址
+  // 生成 Solana 地址
   const solanaPath = "m/44'/501'/0'/0'";
   const derivedSeed = derivePath(solanaPath, seed.toString('hex')).key;
-  const keypair = Keypair.fromSeed(derivedSeed);
-  const solanaAddress = keypair.publicKey.toBase58();
+  const solanaKeypair = Keypair.fromSeed(derivedSeed);
+  const solanaAddress = solanaKeypair.publicKey.toBase58();
+
+  // 生成 XRP 地址 (bipPath: "m/44'/144'/0'/0/0")
+  const xrpWallet = Wallet.fromMnemonic(mnemonic);
+  const xrpAddress = xrpWallet.address;
 
   return {
     mnemonic,
@@ -146,6 +153,7 @@ async function generateAddresses(mnemonicInput?: string): Promise<{ mnemonic: st
       bitcoinBech32: bitcoinAddressBech32,
       dogecoin: dogecoinAddress!,
       solana: solanaAddress,
+      xrp: xrpAddress,
     },
   };
 }
@@ -176,6 +184,7 @@ async function main() {
     console.log('比特币 Bech32:', result.addresses.bitcoinBech32);
     console.log('狗狗币:', result.addresses.dogecoin);
     console.log('Solana:', result.addresses.solana);
+    console.log('XRP:', result.addresses.xrp);
   } catch (error) {
     console.error('错误:', error);
     process.exit(1);
