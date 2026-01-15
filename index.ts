@@ -1,3 +1,4 @@
+import bs58 from 'bs58';
 import HDKey from 'hdkey';
 import { publicToAddress, toChecksumAddress } from '@ethereumjs/util';
 import * as bitcoin from 'bitcoinjs-lib';
@@ -21,6 +22,7 @@ interface CryptoAddresses {
   bitcoinTaproot?: string;
   dogecoin?: string;
   solana?: string;
+  solanaPrivateKey?: string;
   xrp?: string;
 }
 
@@ -137,6 +139,7 @@ async function generateAddresses(mnemonicInput?: string): Promise<{ mnemonic: st
   const derivedSeed = derivePath(solanaPath, seed.toString('hex')).key;
   const solanaKeypair = Keypair.fromSeed(derivedSeed);
   const solanaAddress = solanaKeypair.publicKey.toBase58();
+  const solanaPrivateKey = bs58.encode(solanaKeypair.secretKey);
 
   // 生成 XRP 地址 (bipPath: "m/44'/144'/0'/0/0")
   const xrpWallet = Wallet.fromMnemonic(mnemonic);
@@ -153,6 +156,7 @@ async function generateAddresses(mnemonicInput?: string): Promise<{ mnemonic: st
       bitcoinBech32: bitcoinAddressBech32,
       dogecoin: dogecoinAddress!,
       solana: solanaAddress,
+      solanaPrivateKey: solanaPrivateKey,
       xrp: xrpAddress,
     },
   };
@@ -184,6 +188,7 @@ async function main() {
     console.log('比特币 Bech32:', result.addresses.bitcoinBech32);
     console.log('狗狗币:', result.addresses.dogecoin);
     console.log('Solana:', result.addresses.solana);
+    console.log('Solana私钥:', result.addresses.solanaPrivateKey);
     console.log('XRP:', result.addresses.xrp);
   } catch (error) {
     console.error('错误:', error);
